@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Workspace</title>
+  <link rel="stylesheet" href="/styles.css?v=13">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="workspace-shell">
+
+    <!-- File system sidebar (first) -->
+    <aside class="file-sidebar collapsed" id="fileSidebar" aria-label="File navigation">
+      <header class="file-sidebar-header">
+        <span class="file-sidebar-title">Files</span>
+        <button id="filesToggle" type="button" aria-label="Expand files" title="Expand files"><i data-lucide="panel-left-open"></i></button>
+      </header>
+      <div class="file-sidebar-content">
+        <label class="file-search" for="fileSearch">
+          <i data-lucide="search" aria-hidden="true"></i>
+          <input id="fileSearch" type="search" placeholder="Filter Files..." aria-label="Filter Files">
+        </label>
+        <div class="file-sidebar-actions" aria-label="File actions">
+          <span class="file-actions-label">File</span>
+          <button type="button" id="deleteFile" aria-label="Delete selected file or folder" title="Delete selected file or folder"><i data-lucide="trash-2" aria-hidden="true"></i></button>
+          <button type="button" id="addFolder" aria-label="Add folder" title="Add folder"><i data-lucide="folder-plus" aria-hidden="true"></i></button>
+          <button type="button" id="addFile" aria-label="Add file" title="Add file"><i data-lucide="file-plus" aria-hidden="true"></i></button>
+        </div>
+        <div class="file-filter-empty" id="fileFilterEmpty">No matching files</div>
+        <div class="file-tree" id="fileTree" role="tree" aria-label="Workspace files"></div>
+      </div>
+    </aside>
+
+    <!-- Tool rail (second) -->
+    <aside class="tool-rail" aria-label="Workspace tools">
+      <button class="tool-btn" type="button" data-create="note" aria-label="Create note" title="Create note"><i data-lucide="sticky-note"></i></button>
+      <button class="tool-btn" type="button" data-create="task" aria-label="Create to-do list" title="Create to-do list"><i data-lucide="list-todo"></i></button>
+      <button class="tool-btn" type="button" data-create="board" aria-label="Create Kanban board" title="Create Kanban board"><i data-lucide="columns-3"></i></button>
+      <button class="tool-btn" type="button" data-create="link" aria-label="Create link card" title="Create link card"><i data-lucide="link"></i></button>
+      <button class="tool-btn" type="button" data-create="photo" aria-label="Add photo" title="Add photo"><i data-lucide="image-plus"></i></button>
+      <button class="tool-btn" type="button" data-create="chinese" aria-label="Add Chinese card" title="Add Chinese card"><span class="cn-tool">漢</span></button>
+      <div class="flex-1"></div>
+      <button class="tool-btn" type="button" id="exportButton" aria-label="Export workspace" title="Export workspace"><i data-lucide="download"></i></button>
+      <div class="export-menu" id="exportMenu" role="menu" aria-label="Export options">
+        <button type="button" role="menuitem" data-export="pdf">Export as PDF</button>
+        <button type="button" role="menuitem" data-export="png">Export as PNG</button>
+      </div>
+      <button class="tool-btn" type="button" id="searchButton" aria-label="Search workspace" title="Search workspace"><i data-lucide="search"></i></button>
+    </aside>
+
+    <!-- Canvas -->
+    <main class="canvas-viewport" id="viewport" aria-label="Visual workspace canvas">
+      <div class="search-popover" id="searchPopover" role="dialog" aria-label="Search workspace">
+        <div class="search-input-wrap">
+          <i data-lucide="search" aria-hidden="true"></i>
+          <label class="sr-only" for="workspaceSearch">Search workspace</label>
+          <input id="workspaceSearch" type="search" placeholder="Search workspace...">
+          <button type="button" class="card-icon-btn" id="closeSearch" aria-label="Close search"><i data-lucide="x"></i></button>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+      </div>
+
+      <div class="selection-actions" id="selectionActions">
+        <span id="selectionCount">2 selected</span>
+        <button class="small-action" id="groupButton" type="button">Group</button>
+      </div>
+
+      <div class="canvas-world" id="world"></div>
+
+      <div class="confirm-dialog" id="confirmDialog" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <div class="confirm-panel">
+          <h2 id="confirmTitle">Delete this card?</h2>
+          <p id="confirmMessage">This action cannot be undone.</p>
+          <div class="confirm-actions" id="confirmActions">
+            <button type="button" id="confirmCancel">Cancel</button>
+            <button type="button" class="primary" id="confirmDelete">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <nav class="format-bar" id="formatBar" aria-label="Text formatting toolbar">
+        <button type="button" data-command="bold" aria-label="Bold" title="Bold"><i data-lucide="bold"></i></button>
+        <button type="button" data-command="italic" aria-label="Italic" title="Italic"><i data-lucide="italic"></i></button>
+        <button type="button" data-command="underline" aria-label="Underline" title="Underline"><i data-lucide="underline"></i></button>
+        <button type="button" data-command="formatBlock" data-value="H1" aria-label="Heading 1" title="Heading 1">H1</button>
+        <button type="button" data-command="formatBlock" data-value="H2" aria-label="Heading 2" title="Heading 2">H2</button>
+        <button type="button" data-command="insertUnorderedList" aria-label="Bullet list" title="Bullet list"><i data-lucide="list"></i></button>
+        <button type="button" data-command="insertOrderedList" aria-label="Numbered list" title="Numbered list"><i data-lucide="list-ordered"></i></button>
+        <button type="button" id="taskFormat" aria-label="Add task" title="Add task"><i data-lucide="check-square"></i></button>
+        <button type="button" id="linkFormat" aria-label="Create link" title="Create link"><i data-lucide="link"></i></button>
+        <button type="button" aria-label="More text options" title="More options"><i data-lucide="more-horizontal"></i></button>
+      </nav>
+
+      <div class="zoom-controls" id="zoomControls" aria-label="Zoom controls">
+        <button type="button" class="zoom-btn" id="zoomOut" aria-label="Zoom out" title="Zoom out (Ctrl/Cmd -)"><i data-lucide="minus"></i></button>
+        <button type="button" class="zoom-label" id="zoomReset" aria-label="Reset zoom to 100%" title="Reset zoom (Ctrl/Cmd 0)">100%</button>
+        <button type="button" class="zoom-btn" id="zoomIn" aria-label="Zoom in" title="Zoom in (Ctrl/Cmd +)"><i data-lucide="plus"></i></button>
+      </div>
+
+      <div class="save-status" id="saveStatus">Saved</div>
+    </main>
+  </div>
+
+  <template id="newCardTemplate">
+    <article class="workspace-card" data-card-type="note">
+      <header class="card-head">
+        <span class="drag-dots" aria-hidden="true"><i data-lucide="grip-vertical"></i></span>
+        <input class="card-title" value="Untitled note" aria-label="Card title">
+        <button type="button" class="card-icon-btn send-canvas hidden" aria-label="Send card to canvas"><i data-lucide="move-up-right"></i></button>
+      </header>
+      <div class="editor rich-editor" contenteditable="true" aria-label="Note editor">Write something meaningful&hellip;</div>
+    </article>
+  </template>
+
+  <template id="boardTemplate">
+    <article class="workspace-card board layout-vertical" data-card-type="board" data-orientation="vertical">
+      <header class="card-head">
+        <span class="drag-dots" aria-hidden="true"><i data-lucide="grip-vertical"></i></span>
+        <input class="card-title" value="Project flow" aria-label="Kanban board title">
+        <div class="board-orientation" role="group" aria-label="Board orientation">
+          <button type="button" data-orientation="horizontal" aria-pressed="false" aria-label="Switch to horizontal layout" title="Switch to horizontal layout"><i data-lucide="columns-3" aria-hidden="true"></i></button>
+          <button type="button" data-orientation="vertical" aria-pressed="true" aria-label="Switch to vertical layout" title="Switch to vertical layout"><i data-lucide="rows-3" aria-hidden="true"></i></button>
+        </div>
+      </header>
+      <section class="board-columns" aria-label="Kanban board cards">
+        <div class="column-stack"></div>
+        <button class="drop-area" type="button"><i data-lucide="plus"></i><span>Drop or add a card here.</span></button>
+        <div class="board-drop-target" aria-hidden="true">Drop card here</div>
+      </section>
+    </article>
+  </template>
+
+  <script src="/app.js?v=13"></script>
+</body>
+</html>
